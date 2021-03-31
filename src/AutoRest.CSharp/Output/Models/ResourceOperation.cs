@@ -49,5 +49,12 @@ namespace AutoRest.CSharp.Output.Models
                 $"A class representing the operations that can be performed over a specific {clientPrefix}." :
                 BuilderHelpers.EscapeXmlDescription(operationGroup.Language.Default.Description);
         }
+
+        // helper name loopups so you can quickly find related class names in various writers
+        public string ResourceDefaultName => _prefix;
+        public string OperationsDefaultName => _prefix + OperationsSuffixValue;
+        public string ContainerDefaultName => _prefix + ContainerSuffixValue;
+        public string DataDefaultName => _prefix + DataSuffixValue;
+        public string RestOperationsDefaultName => RestClient.Type.Name;
     }
 }
