@@ -28,7 +28,7 @@ namespace AutoRest.CSharp.Generation.Writers
             {
                 writer.WriteXmlDocumentationSummary(resourceOperation.Description);
                 // todo: do not hard code ResourceGroupResourceIdentifier
-                using (writer.Scope($"{resourceOperation.Declaration.Accessibility} partial class {cs.Name} : ResourceOperationsBase<ResourceGroupResourceIdentifier, {resourceOperation.ResourceDefaultName}>"))
+                using (writer.Scope($"{resourceOperation.Declaration.Accessibility} partial class {cs.Name} : ResourceOperationsBase<{resourceOperation.ResourceDefaultName}>"))
                 {
                     WriteClientCtors(writer, resourceOperation);
                     WriteValidResourceType(writer, resourceOperation);
@@ -43,7 +43,7 @@ namespace AutoRest.CSharp.Generation.Writers
             writer.WriteXmlDocumentationParameter("options", "The client parameters to use in these operations.");
             writer.WriteXmlDocumentationParameter("id", "The identifier of the resource that is the target of operations.");
             // todo: do not hard code ResourceGroupResourceIdentifier
-            using (writer.Scope($"protected {resourceOperation.Type.Name:D}(ResourceOperationsBase options, ResourceGroupResourceIdentifier id) : base(options, id)"))
+            using (writer.Scope($"protected {resourceOperation.Type.Name:D}(ResourceOperationsBase options, ResourceIdentifier id) : base(options, id)"))
             {
             }
         }

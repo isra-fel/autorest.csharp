@@ -24,15 +24,15 @@ namespace AutoRest.CSharp.Generation.Writers
             {
                 writer.WriteXmlDocumentationSummary(resourceContainer.Description);
                 // todo: do not hard code ResourceGroupResourceIdentifier
-                var baseClass = $"ResourceContainerBase<ResourceGroupResourceIdentifier, {resourceContainer.ResourceDefaultName}, {resourceContainer.DataDefaultName}>";
+                var baseClass = $"ResourceContainerBase<{resourceContainer.ResourceDefaultName}, {resourceContainer.DataDefaultName}>";
                 using (writer.Scope($"{resourceContainer.Declaration.Accessibility} partial class {cs.Name:D} : {baseClass}"))
                 {
                     WriteClientCtors(writer, resourceContainer);
                     WriteOperationsField(writer, resourceContainer);
-                    WriteIdProperty(writer, resourceContainer);
+                    //WriteIdProperty(writer, resourceContainer);
                     WriteValidResourceType(writer, resourceContainer);
                     WriteResourceOperations(writer, resourceContainer);
-                    WriteBuilders(writer, resourceContainer);
+                    //WriteBuilders(writer, resourceContainer);
                 }
             }
         }
@@ -67,14 +67,14 @@ namespace AutoRest.CSharp.Generation.Writers
             {
                 using (writer.Scope($"get"))
                 {
-                    using (writer.Scope($"if (Id.TryGetSubscriptionId(out var subscriptionId))"))
-                    {
+                    //using (writer.Scope($"if (Id.TryGetSubscriptionId(out var subscriptionId))"))
+                    //{
                         using var _ = writer.Scope($"return new {resourceContainer.RestOperationsDefaultName}", "(", ");");
                         writer.LineRaw($"new Azure.Core.Pipeline.ClientDiagnostics(ClientOptions),");
                         writer.Line($"new HttpPipeline(ClientOptions.Transport),");
-                        writer.Line($"subscriptionId");
-                    }
-                    writer.Line($"throw new System.Exception(\"Todo: no sub id\");");
+                        writer.Line($"Id.Subscription");
+                    //}
+                    //writer.Line($"throw new System.Exception(\"Todo: no sub id\");");
                 }
             }
         }
@@ -117,7 +117,7 @@ namespace AutoRest.CSharp.Generation.Writers
             writer.WriteXmlDocumentationInheritDoc();
             using (writer.Scope($"public override ArmResponse<{resourceContainer.ResourceDefaultName}> CreateOrUpdate(string name, {resourceContainer.DataDefaultName} resourceDetails, {typeof(CancellationToken)} cancellationToken = default)"))
             {
-                writer.Line($"var response = Operations.CreateOrUpdate(Id.ResourceGroupName, name, resourceDetails);");
+                writer.Line($"var response = Operations.CreateOrUpdate(Id.ResourceGroup, name, resourceDetails);");
                 writer.Line($"return new PhArmResponse<{resourceContainer.ResourceDefaultName}, {resourceContainer.DataDefaultName}>(");
                 writer.Line($"response,");
                 writer.Line($"data => new {resourceContainer.ResourceDefaultName}(Parent, data));");
