@@ -147,6 +147,31 @@ namespace AutoRest.CSharp.Mgmt.Generation
             return restMethod != null;
         }
 
+        private void WriteContainerMethods()
+        {
+            WriteContainerMethod(_resourceContainer.GetMethod(ResourceContainerMethods.CreateOrUpdate), customImplementation: writer => {
+
+            });
+        }
+
+        private void WriteContainerMethod(ResourceContainerMethod method, CodeWriterDelegate? customImplementation = null)
+        {
+            _writer.Line();
+
+            if (method.IsOverride) {
+                _writer.WriteXmlDocumentationInheritDoc();
+            } else {
+                _writer.WriteXmlDocumentationSummary(method.Description);
+            }
+
+            // we should still write <param>'s even when we do <inheritdoc> because
+            // parameter descriptions from the child class can be more specific
+
+            if (customImplementation != null) {
+                customImplementation(_writer);
+            }
+        }
+
         private void WriteCreateOrUpdateVariants(RestClientMethod restClientMethod)
         {
             // hack: should add a IsLongRunning property to method?

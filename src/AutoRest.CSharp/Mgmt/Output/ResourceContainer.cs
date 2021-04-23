@@ -2,12 +2,17 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using AutoRest.CSharp.Input;
 using AutoRest.CSharp.Mgmt.AutoRest;
 using AutoRest.CSharp.Mgmt.Decorator;
 using AutoRest.CSharp.Output.Builders;
+using AutoRest.CSharp.Output.Models;
+using AutoRest.CSharp.Output.Models.Requests;
 using AutoRest.CSharp.Output.Models.Types;
+using Azure.Core;
 using Azure.ResourceManager.Core;
 
 namespace AutoRest.CSharp.Mgmt.Output
@@ -19,6 +24,7 @@ namespace AutoRest.CSharp.Mgmt.Output
         private const string ResourceGroupOperationsResourceType = "ResourceGroupOperations.ResourceType";
         private const string SubscriptionOperationsResourceType = "SubscriptionOperations.ResourceType";
         private const string TenantResourceType = "ResourceIdentifier.RootResourceIdentifier.ResourceType";
+        private Dictionary<ResourceContainerMethods, ResourceContainerMethod>? _methods;
 
         public ResourceContainer(OperationGroup operationGroup, BuildContext<MgmtOutputLibrary> context)
             : base(operationGroup, context)
@@ -74,5 +80,55 @@ namespace AutoRest.CSharp.Mgmt.Output
             var parentOperations = _context.Library.GetResourceOperation(parentOperationGroup);
             return $"{parentOperations.Declaration.Name}.ResourceType";
         }
+
+        public ResourceContainerMethod GetMethod(ResourceContainerMethods name) => EnsureContainerMethods()[name];
+
+        private Dictionary<ResourceContainerMethods, ResourceContainerMethod> EnsureContainerMethods()
+        {
+            if (_methods != null)
+            {
+                return _methods;
+            }
+            _methods = new Dictionary<ResourceContainerMethods, ResourceContainerMethod>();
+
+
+            // To generate resource operations, we need to find out the correct REST client methods to call.
+            // We must look for CreateOrUpdate by HTTP method because it may be named differently from `CreateOrUpdate`.
+            var restClientMethod = FindRestClientMethodByHttpMethod(RequestMethod.Put);
+            _methods[ResourceContainerMethods.CreateOrUpdate] = new ResourceContainerMethod("createOrUpdate", restClientMethod, null, new Diagnostic($"{Type.Name}.{"createOrUpdate"}"), "public", true);
+            return _methods;
+        }
+
+        private RestClientMethod FindRestClientMethodByHttpMethod(RequestMethod httpMethod) => RestClient.Methods.FirstOrDefault(m => m.Request.HttpMethod.Equals(httpMethod));
+
+        private RestClientMethod FindRestClientMethodByName(IEnumerable<string> nameOptions) => RestClient.Methods.FirstOrDefault(method => nameOptions.Any(option => string.Equals(method.Name, option, StringComparison.InvariantCultureIgnoreCase)));
+    }
+
+    /// <summary>
+    /// Represents a method inside a ResourceContainer class.
+    /// </summary>
+    internal class ResourceContainerMethod
+    {
+        public ResourceContainerMethod(string name, RestClientMethod? restClientMethod, string? description, Diagnostic diagnostics, string accessibility, bool isOverride)
+        {
+            Name = name;
+            RestClientMethod = restClientMethod;
+            Description = description;
+            Diagnostics = diagnostics;
+            Accessibility = accessibility;
+            IsOverride = isOverride;
+        }
+
+        public string Name { get; }
+        public RestClientMethod? RestClientMethod { get; }
+        public string? Description { get; }
+        public Diagnostic Diagnostics { get; }
+        public string Accessibility { get; }
+        public bool IsOverride { get; }
+    }
+
+    internal enum ResourceContainerMethods
+    {
+        CreateOrUpdate
     }
 }
