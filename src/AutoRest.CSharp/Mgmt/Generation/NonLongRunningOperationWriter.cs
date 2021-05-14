@@ -13,7 +13,7 @@ using Azure.ResourceManager.Core;
 
 namespace AutoRest.CSharp.Mgmt.Generation
 {
-    internal class NonLongRunningOperationWriter
+    internal class NonLongRunningOperationWriter : LongRunningOperationWriter
     {
         /// <summary>
         /// Write a management plane non-LRO as a LRO for the consistency of API surface.
@@ -66,47 +66,7 @@ namespace AutoRest.CSharp.Mgmt.Generation
 
                     }
 
-                    writer.WriteXmlDocumentationInheritDoc();
-                    writer.Line($"public override string Id => _operation.Id;");
-                    writer.Line();
-
-                    if (operation.ResultType != null)
-                    {
-                        writer.WriteXmlDocumentationInheritDoc();
-                        writer.Line($"public override {operation.ResultType} Value => _operation.Value;");
-                        writer.Line();
-                    }
-
-                    writer.WriteXmlDocumentationInheritDoc();
-                    writer.Line($"public override bool HasCompleted => _operation.HasCompleted;");
-                    writer.Line();
-
-                    if (operation.ResultType != null)
-                    {
-                        writer.WriteXmlDocumentationInheritDoc();
-                        writer.Line($"public override bool HasValue => _operation.HasValue;");
-                        writer.Line();
-                    }
-
-                    writer.WriteXmlDocumentationInheritDoc();
-                    writer.Line($"public override {typeof(Response)} GetRawResponse() => _operation.GetRawResponse();");
-                    writer.Line();
-
-                    writer.WriteXmlDocumentationInheritDoc();
-                    writer.Line($"public override {typeof(Response)} UpdateStatus({typeof(CancellationToken)} cancellationToken = default) => _operation.UpdateStatus(cancellationToken);");
-                    writer.Line();
-
-                    writer.WriteXmlDocumentationInheritDoc();
-                    writer.Line($"public override {typeof(ValueTask<Response>)} UpdateStatusAsync({typeof(CancellationToken)} cancellationToken = default) => _operation.UpdateStatusAsync(cancellationToken);");
-                    writer.Line();
-
-                    writer.WriteXmlDocumentationInheritDoc();
-                    writer.Line($"public override {waitForCompletionType} {waitForCompleteMethodName}({typeof(CancellationToken)} cancellationToken = default) => _operation.{waitForCompleteMethodName}(cancellationToken);");
-                    writer.Line();
-
-                    writer.WriteXmlDocumentationInheritDoc();
-                    writer.Line($"public override {waitForCompletionType} {waitForCompleteMethodName}({typeof(TimeSpan)} pollingInterval, {typeof(CancellationToken)} cancellationToken = default) => _operation.{waitForCompleteMethodName}(pollingInterval, cancellationToken);");
-                    writer.Line();
+                    WriteProperties(writer, operation);
                 }
             }
         }

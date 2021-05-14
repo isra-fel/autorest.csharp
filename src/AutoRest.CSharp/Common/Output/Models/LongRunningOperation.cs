@@ -15,13 +15,12 @@ using Azure.Core;
 
 namespace AutoRest.CSharp.Output.Models.Requests
 {
-    internal class LongRunningOperation : TypeProvider
+    internal class LongRunningOperation : LongRunningOperationBase
     {
-        public LongRunningOperation(OperationGroup operationGroup, Input.Operation operation, BuildContext context, LongRunningOperationInfo lroInfo) : base(context)
+        public LongRunningOperation(OperationGroup operationGroup, Input.Operation operation, BuildContext context, LongRunningOperationInfo lroInfo) : base(operation, context, lroInfo)
         {
             Debug.Assert(operation.IsLongRunning);
 
-            DefaultName = lroInfo.ClientPrefix + operation.CSharpName() + "Operation";
             FinalStateVia = operation.LongRunningFinalStateVia switch
             {
                 "azure-async-operation" => OperationFinalStateVia.AzureAsyncOperation,
@@ -47,19 +46,12 @@ namespace AutoRest.CSharp.Output.Models.Requests
                     ResultType = new CSharpType(typeof(AsyncPageable<>), PagingResponse.ItemType);
                 }
             }
-
-            Description = BuilderHelpers.EscapeXmlDescription(operation.Language.Default.Description);
-            DefaultAccessibility = lroInfo.Accessibility;
         }
 
-        public CSharpType? ResultType { get; }
         public OperationFinalStateVia FinalStateVia { get; }
         public Diagnostic Diagnostics => new Diagnostic(Declaration.Name);
         public ObjectSerialization? ResultSerialization { get; }
         public RestClientMethod? NextPageMethod { get; }
         public PagingResponseInfo? PagingResponse { get; }
-        public string Description { get; }
-        protected override string DefaultName { get; }
-        protected override string DefaultAccessibility { get; }
     }
 }
